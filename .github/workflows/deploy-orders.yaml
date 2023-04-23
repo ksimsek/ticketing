@@ -1,0 +1,27 @@
+name: deploy-orders
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'orders/**'
+      
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: cd orders && docker build -t ksimsek/orders .
+      - run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      - run: docker push ksimsek/orders
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-1
+      - run: aws eks update-kubeconfig --name ticketing --region eu-west-1
+      - run: kubectl rollout restart deployment orders-depl 
