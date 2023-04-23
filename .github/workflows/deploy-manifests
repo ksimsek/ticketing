@@ -17,8 +17,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-1
-      - uses: actions-hub/kubectl@master
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+      - run: aws eks update-kubeconfig --name ticketing --region eu-west-1
       - run: kubectl apply -f infra/k8s && kubectl apply -f infra/k8s-prod
       
